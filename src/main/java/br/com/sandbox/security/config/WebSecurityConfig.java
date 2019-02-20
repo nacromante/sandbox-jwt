@@ -15,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import br.com.sandbox.security.CustomAuthenticationProvider;
 import br.com.sandbox.security.JwtExceptionAuthenticationEntryPoint;
 import br.com.sandbox.security.filter.JwtAuthenticationTokenFilter;
 
@@ -28,6 +29,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	private UserDetailsService userDetailsService;
+	
+	@Autowired
+    private CustomAuthenticationProvider authProvider;
+ 
+//    @Override
+//    protected void configure(
+//      AuthenticationManagerBuilder auth) throws Exception {
+//  
+//        auth.authenticationProvider(authProvider);
+//    }
 
 	@Autowired
 	public void configureAuthentication(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {

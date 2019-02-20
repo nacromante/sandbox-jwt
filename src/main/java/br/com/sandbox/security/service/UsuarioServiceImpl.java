@@ -13,7 +13,8 @@ public class UsuarioServiceImpl implements UsuarioService {
 	
 	
 	public Optional<Usuario> buscarPorEmail(String email) {
-		String pwdEncode = new BCryptPasswordEncoder().encode("1234");
+		String pwdEncode = new BCryptPasswordEncoder().encode("1234"
+				);
 		Usuario usuario = new Usuario(1L, "fred@gmail.com",pwdEncode , PerfilEnum.ROLE_ADMIN);
 		if(email.equals(usuario.getEmail()))
 			return Optional.ofNullable(usuario);
