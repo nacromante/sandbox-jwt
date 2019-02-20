@@ -149,6 +149,7 @@ public class JwtTokenUtil {
 	 * @return String
 	 */
 	private String gerarToken(Map<String, Object> claims) {
+		System.out.println(">>>>>>>>>>>>>>>>secret "+secret);
 		return Jwts.builder().setClaims(claims).setExpiration(gerarDataExpiracao())
 				.signWith(SignatureAlgorithm.HS512, secret).compact();
 	}

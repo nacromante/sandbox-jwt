@@ -2,6 +2,7 @@ package br.com.sandbox.security.service;
 
 import java.util.Optional;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import br.com.sandbox.model.PerfilEnum;
@@ -12,7 +13,10 @@ public class UsuarioServiceImpl implements UsuarioService {
 	
 	
 	public Optional<Usuario> buscarPorEmail(String email) {
-		Usuario usuario = new Usuario(1L, "fred@gmail.com", "1234", PerfilEnum.ROLE_ADMIN);
-		return Optional.ofNullable(usuario);
+		String pwdEncode = new BCryptPasswordEncoder().encode("1234");
+		Usuario usuario = new Usuario(1L, "fred@gmail.com",pwdEncode , PerfilEnum.ROLE_ADMIN);
+		if(email.equals(usuario.getEmail()))
+			return Optional.ofNullable(usuario);
+		return Optional.ofNullable(null);
 	}
 }
