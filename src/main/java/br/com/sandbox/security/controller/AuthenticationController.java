@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -57,7 +56,7 @@ public class AuthenticationController {
 	
 	@Autowired
 	private BodyRequest bodyRequest;
-
+	
 	/**
 	 * Gera e retorna um novo token JWT.
 	 * 
@@ -67,7 +66,7 @@ public class AuthenticationController {
 	 * @throws AuthenticationException
 	 */
 	@PostMapping
-	public ResponseEntity<Response<TokenDto>> gerarTokenJwt(@Valid @RequestBody JwtAuthenticationDto authenticationDto,
+	public ResponseEntity<?> gerarTokenJwt(@Valid @RequestBody JwtAuthenticationDto authenticationDto,
 			BindingResult result) throws AuthenticationException {
 		Response<TokenDto> response = new Response<TokenDto>();
 
@@ -77,30 +76,28 @@ public class AuthenticationController {
 			return ResponseEntity.badRequest().body(response);
 		}
 
-		log.info("Gerando token para o email {}.", authenticationDto.getEmail());
-		log.info("Gerando token para o senha {}. ", authenticationDto.getSenha());
+		log.info("Gerando token para o email {}.", authenticationDto.getUsername());
+		log.info("Gerando token para o senha {}. ", authenticationDto.getPassword());
 		//acessar api externa
 		
-		Usuario user = new Usuario(null, authenticationDto.getEmail(), authenticationDto.getSenha(), PerfilEnum.ROLE_ADMIN);
+		Usuario user = new Usuario(null, authenticationDto.getUsername(), authenticationDto.getPassword(), PerfilEnum.ROLE_ADMIN);
         ResponseEntity<String> out = bodyRequest.send(user);
-        if (HttpStatus.OK.equals(out.getStatusCode())) {
-        	
+		if (HttpStatus.OK.equals(out.getStatusCode())) {
         	List<GrantedAuthority> auts = new ArrayList<>();
             GrantedAuthority grand = new SimpleGrantedAuthority(PerfilEnum.ROLE_ADMIN.toString());
             auts.add(grand);
         	
-//			Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken("fred@gmail.com", "1234", auts));
-			Authentication authentication = authenticationManager.authenticate(
-					new UsernamePasswordAuthenticationToken(authenticationDto.getEmail(), null, auts));
+			Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authenticationDto.getUsername(), "555", auts));
 			SecurityContextHolder.getContext().setAuthentication(authentication);
-        }else
-        	throw new BadCredentialsException("User not found");
+			
+			UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationDto.getUsername());
+			String token = jwtTokenUtil.obterToken(userDetails);
+			response.setData(new TokenDto(token));
+			return new ResponseEntity<Response<TokenDto>>(response, HttpStatus.OK);
+		}
 
-		UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationDto.getEmail());
-		String token = jwtTokenUtil.obterToken(userDetails);
-		response.setData(new TokenDto(token));
 
-		return ResponseEntity.ok(response);
+		return out;
 	}
 
 	/**

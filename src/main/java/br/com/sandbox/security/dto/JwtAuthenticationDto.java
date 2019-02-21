@@ -1,38 +1,47 @@
 package br.com.sandbox.security.dto;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class JwtAuthenticationDto {
 
-	private String email;
-	private String senha;
+	private String username;
+	private String password;
+	@JsonProperty("app_id")
+	private String appId;
+	
+	
 
 	public JwtAuthenticationDto() {
 	}
 
-	@NotEmpty(message = "Email não pode ser vazio.")
-	public String getEmail() {
-		return email;
+	public String getUsername() {
+		return username;
 	}
 
-	public void setEmail(String email) {
-		this.email = email;
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
-	@NotEmpty(message = "Senha não pode ser vazia.")
-	public String getSenha() {
-		return senha;
+	public String getPassword() {
+		return password;
 	}
 
-	public void setSenha(String senha) {
-		this.senha = senha;
+	public void setPassword(String password) {
+		this.password = password;
 	}
 
-	@Override
-	public String toString() {
-		return "JwtAuthenticationRequestDto [email=" + email + ", senha=" + senha + "]";
+	public String getAppId() {
+		return appId;
 	}
+
+	public void setAppId(String appId) {
+		this.appId = appId;
+	}
+	
+	
+
+	
 
 }
