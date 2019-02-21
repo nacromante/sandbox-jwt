@@ -1,5 +1,7 @@
 package br.com.sandbox.security.controller;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
@@ -8,11 +10,15 @@ import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -23,6 +29,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.sandbox.model.PerfilEnum;
+import br.com.sandbox.model.Usuario;
+import br.com.sandbox.request.BodyRequest;
 import br.com.sandbox.response.Response;
 import br.com.sandbox.security.dto.JwtAuthenticationDto;
 import br.com.sandbox.security.dto.TokenDto;
@@ -45,6 +54,9 @@ public class AuthenticationController {
 
 	@Autowired
 	private UserDetailsService userDetailsService;
+	
+	@Autowired
+	private BodyRequest bodyRequest;
 
 	/**
 	 * Gera e retorna um novo token JWT.
@@ -66,9 +78,23 @@ public class AuthenticationController {
 		}
 
 		log.info("Gerando token para o email {}.", authenticationDto.getEmail());
-		Authentication authentication = authenticationManager.authenticate(
-				new UsernamePasswordAuthenticationToken(authenticationDto.getEmail(), authenticationDto.getSenha()));
-		SecurityContextHolder.getContext().setAuthentication(authentication);
+		log.info("Gerando token para o senha {}. ", authenticationDto.getSenha());
+		//acessar api externa
+		
+		Usuario user = new Usuario(null, authenticationDto.getEmail(), authenticationDto.getSenha(), PerfilEnum.ROLE_ADMIN);
+        ResponseEntity<String> out = bodyRequest.send(user);
+        if (HttpStatus.OK.equals(out.getStatusCode())) {
+        	
+        	List<GrantedAuthority> auts = new ArrayList<>();
+            GrantedAuthority grand = new SimpleGrantedAuthority(PerfilEnum.ROLE_ADMIN.toString());
+            auts.add(grand);
+        	
+//			Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken("fred@gmail.com", "1234", auts));
+			Authentication authentication = authenticationManager.authenticate(
+					new UsernamePasswordAuthenticationToken(authenticationDto.getEmail(), null, auts));
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+        }else
+        	throw new BadCredentialsException("User not found");
 
 		UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationDto.getEmail());
 		String token = jwtTokenUtil.obterToken(userDetails);

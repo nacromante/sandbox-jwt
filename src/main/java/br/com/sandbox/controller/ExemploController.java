@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ExemploController {
 
 	@GetMapping(value = "/{nome}")
-	@PreAuthorize("hasAnyRole('ADMIN')")
+	@PreAuthorize("hasRole('ROLE_ADMIN')")
 	public String exemplo(@PathVariable("nome") String nome) {
 		return "Olá " + nome;
 	}
